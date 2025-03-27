@@ -20,7 +20,6 @@ async def get_user_id(username: str):
 async def register_user(user: UsersBase):
     password = await hasher_pwd(user.password)
     username = user.username
-    r.set("reg_password", password)
     async with Session() as session:
         user = Users(username=username, password=password)
         session.add(user)
@@ -28,6 +27,7 @@ async def register_user(user: UsersBase):
         session.refresh(user)
         if user:
             unique_username_id = await get_user_id(username)
+            r.set(f"reg_password-{unique_username_id}", password)
             r.set(f"reg_username-{unique_username_id}", username)
             return {"Message": "User registered successfully"}
         else:

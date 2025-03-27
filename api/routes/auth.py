@@ -40,14 +40,14 @@ async def get_pwd(password: str, username: str):
 async def login(response: Response, user: UsersBase = Form(...)):
     myuuid = uuid.uuid4()
     username = user.username
-    plain_password = r.set("user_pwd", user.password)
+    plain_password = r.set(f"user_pwd-{await get_user_id(username)}", user.password)
     async with Session() as session:
         sql_username = select(Users.username).where(Users.username == username)
         result_username = session.exec(sql_username)
         result = result_username.first()
-        hashed_password = await get_pwd(r.get("reg_password"), r.get(f"reg_username-{await get_user_id(username)}"))
+        hashed_password = await get_pwd(r.get(f"reg_password-{await get_user_id(username)}"), r.get(f"reg_username-{await get_user_id(username)}"))
         r.set("hashed_password", hashed_password)
-        if result == r.get(f"reg_username-{await get_user_id(username)}") and await verify_password(r.get("user_pwd"), hashed_password):#Если юзернейм и хэш пароля совпадают то генерим токен
+        if result == r.get(f"reg_username-{await get_user_id(username)}") and await verify_password(r.get(f"user_pwd-{await get_user_id(username)}"), hashed_password):#Если юзернейм и хэш пароля совпадают то генерим токен
             token = security.create_access_token(uid=str(myuuid))
             access_token = security.create_access_token(user.username)
             refresh_token = security.create_refresh_token(user.username)
