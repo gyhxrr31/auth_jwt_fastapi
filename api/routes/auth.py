@@ -46,8 +46,8 @@ async def login(response: Response, user: UsersBase = Form(...)):
         result_username = session.exec(sql_username)
         result = result_username.first()
         hashed_password = await get_pwd(r.get(f"reg_password-{await get_user_id(username)}"), r.get(f"reg_username-{await get_user_id(username)}"))
-        r.set("hashed_password", hashed_password)
-        if result == r.get(f"reg_username-{await get_user_id(username)}") and await verify_password(r.get(f"user_pwd-{await get_user_id(username)}"), hashed_password):#Если юзернейм и хэш пароля совпадают то генерим токен
+        r.set(f"hashed_password-{await get_user_id(username)}", hashed_password)
+        if result == r.get(f"reg_username-{await get_user_id(username)}") and await verify_password(r.get(f"user_pwd-{await get_user_id(username)}"), r.get(f"hashed_password-{await get_user_id(username)}")):#Если юзернейм и хэш пароля совпадают то генерим токен
             token = security.create_access_token(uid=str(myuuid))
             access_token = security.create_access_token(user.username)
             refresh_token = security.create_refresh_token(user.username)
